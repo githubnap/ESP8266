@@ -4,16 +4,47 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h> 
 #include <ESP8266WebServer.h>
+extern "C" {
+#include "user_interface.h"
+}
 
 const char *ssid = "NapChat(192.168.4.1)";
-const char *password = "napnap";
+const char *password = "nap123456789";
 
 ESP8266WebServer server(80);
+
+void setup() {
+    ESP.eraseConfig();
+    delay(1000);
+    Serial.begin(115200);
+    Serial.println();
+    Serial.print("Configuring access point...");
+    /* You can remove the password parameter if you want the AP to be open. */
+    wifi_set_phy_mode(PHY_MODE_11B);
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(ssid, password);
+
+    Serial.print("Wifi name : ");
+    Serial.println(ssid);
+    Serial.print("Wifi name : ");
+    Serial.println(ssid);
+
+    IPAddress apip = WiFi.softAPIP();
+    Serial.print("visit: \n");
+    Serial.println(apip);
+    server.on("/", handleNap);
+    //server.on("/fah", handleFah);
+    server.begin();
+    Serial.println("HTTP server beginned");
+}
+
+void loop() {
+    server.handleClient();
+}
 
 String htmlBody_Nap_Text ="";
 String htmlBody_Nap_from = 
     "<form action='http://192.168.4.1/' method='POST'>"
-      "<a href='http://192.168.4.1/'><button>Refresh</button></a>"
       "<input type='text' name='valueForm'>"
       "<input type='submit' value='Submit'><br>"
     "</form>" ;
@@ -46,7 +77,6 @@ void handleNap(){
 String htmlBody_Fah_Text ="";
 String htmlBody_Fah_from = 
     "<form action='http://192.168.4.1/fah' method='POST'>"
-      "<a href='http://192.168.4.1/fah'><button>Refresh</button></a>"
       "<input type='text' name='valueFormFah'>"
       "<input type='submit' value='Submit'><br>"
     "</form>" ;
@@ -76,22 +106,3 @@ void handleFah(){
   htmlBody_Fah_Head ="";
 }
  
-void setup() {
-    delay(1000);
-    Serial.begin(9600);
-    Serial.println();
-
-    WiFi.softAP(ssid,password);
-
-    IPAddress apip = WiFi.softAPIP();
-    Serial.print("visit: \n");
-    Serial.println(apip);
-    server.on("/", handleNap);
-    server.on("/fah", handleFah);
-    server.begin();
-    Serial.println("HTTP server beginned");
-}
-
-void loop() {
-    server.handleClient();
-}
