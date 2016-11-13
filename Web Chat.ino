@@ -1,6 +1,3 @@
-/*
- * Open browser, visit 192.168.4.1
- */
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h> 
@@ -9,20 +6,30 @@ extern "C" {
 #include "user_interface.h"
 }
 
-const char *ssid = "NapChat192.168.4.1";
-const char *password = "123456";
+const char *ssid = "NapChat(192.168.4.1)";
+const char *password = "startchat";
 
 ESP8266WebServer server(80);
 
 void setup() {
+      struct softap_config config;
+      wifi_softap_get_config(&config); // Get config first.
+    
     ESP.eraseConfig();
     delay(1000);
     wifi_set_phy_mode(PHY_MODE_11B);
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ssid, password);
     IPAddress apip = WiFi.softAPIP();
+
+      config.ssid_len = 0;// or its actual length
+      config.beacon_interval = 100;
+      config.max_connection = 8;
+      wifi_softap_set_config(&config);// Set ESP8266 softap config
+    
     server.on("/", handleNap);
     server.begin();
+
 }
 
 void loop() {
