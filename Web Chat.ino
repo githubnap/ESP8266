@@ -2,21 +2,27 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h> 
 #include <ESP8266WebServer.h>
+
 extern "C" {
 #include "user_interface.h"
 }
 
 const char *ssid = "NapChat(192.168.4.1)";
-const char *password = "startchat";
+const char *password = "testtest";
 
 ESP8266WebServer server(80);
 
 void setup() {
+    ESP.eraseConfig();
+    delay(1000);
+    Serial.begin(115200);
+    WiFi.setAutoConnect(false);
+    WiFi.disconnect(true);
+    WiFi.begin();
+    
       struct softap_config config;
       wifi_softap_get_config(&config); // Get config first.
     
-    ESP.eraseConfig();
-    delay(1000);
     wifi_set_phy_mode(PHY_MODE_11B);
     WiFi.mode(WIFI_AP);
     WiFi.softAP(ssid, password);
@@ -34,6 +40,7 @@ void setup() {
 
 void loop() {
     server.handleClient();
+    
 }
 
 String htmlBody_Nap_Text ="";
@@ -60,7 +67,6 @@ void handleNap(){
         "body{background-color: #000000; Color: #ffffff; }"
       "</style>"
   ;
-  String a = "abcd";
   
   String getValueForm = server.arg("valueForm");
   htmlBody_Nap_Text += getValueForm;
