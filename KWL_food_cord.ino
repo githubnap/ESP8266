@@ -1,5 +1,3 @@
-//กันหาย
-//กันหาย
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
@@ -121,7 +119,7 @@ void loop() {
       mfrc522.PICC_HaltA();
       mfrc522.PCD_StopCrypto1();
       page = 1;
-      
+
       break;
 
     case 1:
@@ -176,7 +174,7 @@ void loop() {
       break;
 
     case 3:
-      delay(200); //1
+      delay(100);                   //ตัวเลขหลักที่ 1
       lcd.setCursor(15, 1);
       lcd.print("3");
 
@@ -184,6 +182,7 @@ void loop() {
         lcd.setCursor(1, 1);
         lcd.print(money_1);
         page_check = false;
+        delay(500);
       }
 
       if (digitalRead(btU) != 1) {
@@ -217,7 +216,7 @@ void loop() {
       break;
 
     case 4:
-      delay(200);                   //2
+      delay(100);                   //ตัวเลขหลักที่ 2
       lcd.setCursor(15, 1);
       lcd.print("4");
 
@@ -270,7 +269,7 @@ void loop() {
       break;
 
     case 5:
-      delay(200);//3
+      delay(100);                   //ตัวเลขหลักที่ 3
       lcd.setCursor(15, 1);
       lcd.print("5");
 
@@ -403,6 +402,7 @@ void loop() {
 
         return;
       } else {
+        History();            //เก็บ History
         lcd.print("Done");
         beep(100);
         delay(100);
@@ -441,4 +441,18 @@ void dump_byte_array(byte * buffer, byte bufferSize) {
   id_now = keep_ID.toInt();
   //Serial.print(keepID);
   keep_ID = "";
+}
+
+void History() {
+
+  int count_number = Firebase.getInt("History/Count");   // เก็บจำหนวนครั้ง
+  Firebase.setInt("History/Count" , count_number + 1);
+
+  if (P_or_M) {                                           // เช็คว่าลบหรือบวก
+    int count_purchase = Firebase.getInt("History/Purchase");
+    Firebase.setInt("History/Purchase" , count_purchase + money_cal);
+  } else {
+    int count_sell = Firebase.getInt("History/Sell");
+    Firebase.setInt("History/Sell" , count_sell + money_cal);
+  }
 }
