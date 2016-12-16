@@ -12,10 +12,14 @@ MFRC522::MIFARE_Key key;
 #include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
 
-#define WIFI_SSID       "KORATWATERLAND"
-#define WIFI_PASSWORD   "0862445402"
-//#define WIFI_SSID       "ON_Home"
-//#define WIFI_PASSWORD   "044349220"
+#include <time.h>
+#define timezone  7*3600
+#define dst  0
+
+//#define WIFI_SSID       "KORATWATERLAND"
+//#define WIFI_PASSWORD   "0862445402"
+#define WIFI_SSID       "ON_Home"
+#define WIFI_PASSWORD   "044349220"
 #define FIREBASE_HOST "test-178e4.firebaseio.com"
 #define FIREBASE_KEY "Cy4ZEdOd02GaVEYXO4ynBHQPCFiwZn7J7qWsTzvs"
 
@@ -37,6 +41,10 @@ int money_3 = 0;
 int money_cal = 0;
 int money_now = 0;
 int money_value = 0;
+
+String Header = "";
+int Number_Tracking = 1;       //เครื่องที่เท่าไหร่ (เครื่องอยู่ตามที่ต่างๆ)
+
 
 void dump_byte_array(byte *buffer, byte bufferSize);
 void setup() {
@@ -73,6 +81,23 @@ void setup() {
     delay(500);
     j++;
   }
+
+  configTime(timezone , dst, "pool.ntp.org", "time.nist.gov");
+  lcd.clear();
+  lcd.print("Setting time");
+  while (!time(nullptr)) {
+    if (j >= 16) {
+      lcd.setCursor(0, 1);
+      lcd.print("                ");
+      lcd.setCursor(0, 1);
+      j = 1;
+    }
+    lcd.print(".");
+    delay(500);
+    j++;
+  }
+  push_Header();
+  
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(WiFi.localIP());
@@ -136,7 +161,7 @@ void loop() {
       lcd.print(String(id_now));
       lcd.setCursor(0, 1);
 
-      money_now = Firebase.getInt(Nameid);
+      money_now = Firebase.getInt(Header + Nameid);
 
       if (Firebase.failed()) {
         lcd.print("Cann't Connect");
@@ -341,7 +366,7 @@ void loop() {
       break;
 
     case 7:
-
+      
       lcd.setCursor(15, 1);
       lcd.print("7");
 
@@ -349,6 +374,8 @@ void loop() {
       lcd.print("               ");
       lcd.setCursor(0, 1);
       lcd.print("Processing");
+
+
 
       switch (money_value) {
         case 1:
@@ -387,8 +414,10 @@ void loop() {
           break;
       }
 
+
+      
       Nameid += id_now;
-      Firebase.setInt(Nameid, money_now);
+      Firebase.setInt(Header + Nameid, money_now);
 
       lcd.setCursor(0, 1);
       lcd.print("               ");
@@ -408,7 +437,6 @@ void loop() {
         delay(100);
         beep(100);
       }
-
 
       delay(300);
       page = 1;
@@ -444,30 +472,49 @@ void dump_byte_array(byte * buffer, byte bufferSize) {
 }
 
 void History() {
+  time_t now = time(nullptr);
+  struct tm* p_tm = localtime(&now);
 
-  int count_number = Firebase.getInt("History/Count");   // เก็บจำหนวนครั้ง
+  int count_number = Firebase.getInt(Header + "History/Count");   // เก็บจำหนวนครั้ง
   count_number++;
-  Firebase.setInt("History/Count" , count_number);
+  Firebase.setInt(Header + "History/Count" , count_number);
 
   String History_Log ="";
   History_Log += String(count_number);
-  History_Log += ".) ";
-  History_Log += "ID=";
+  History_Log += ")";
+  History_Log += "  ";
+  History_Log += String(p_tm -> tm_hour);
+  History_Log += ":";
+  History_Log += String(p_tm -> tm_min);
+  History_Log += " ID=";
   History_Log += String(id_now);
-  History_Log += "  Value=";
+  History_Log += " Value=";
   
 
   if (P_or_M) {                                           // เช็คว่าลบหรือบวก
-    int count_purchase = Firebase.getInt("History/Purchase");
-    Firebase.setInt("History/Purchase" , count_purchase + money_cal);
+    int count_purchase = Firebase.getInt(Header + "History/Purchase");
+    Firebase.setInt(Header + "History/Purchase" , count_purchase + money_cal);
     
     History_Log += "+";
   } else {
-    int count_sell = Firebase.getInt("History/Sell");
-    Firebase.setInt("History/Sell" , count_sell + money_cal);
+    int count_sell = Firebase.getInt(Header + "History/Sell");
+    Firebase.setInt(Header + "History/Sell" , count_sell + money_cal);
     
     History_Log += "-";
   }
     History_Log += String(money_cal);
-    Firebase.pushString("History/Log",History_Log);
+    Firebase.pushString(Header + "History/Log",History_Log);
+}
+
+void push_Header(){
+      time_t now = time(nullptr);                              // ดึงเวลามาจากเน็ต
+      struct tm* p_tm = localtime(&now);
+      Header = String((p_tm -> tm_year) - 100 + 2000);        //คำนวนปี
+      Header += "/";
+      Header += String(p_tm -> tm_mon + 1);                   //คำนวนเดือน
+      Header += "/";
+      Header += String(p_tm -> tm_mday);                   //คำนวนวัน
+      Header += "/";
+      Header += Number_Tracking;
+      Header += "/";
 }
