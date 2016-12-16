@@ -346,7 +346,7 @@ void loop() {
       //}
       break;
 
-    case 6:
+    case 6:                                   // หน้ายืนยัน
       delay(300);
       lcd.setCursor(15, 1);
       lcd.print("6");
@@ -365,7 +365,7 @@ void loop() {
       }
       break;
 
-    case 7:
+    case 7:                                   //หน้าคำนวน และ อัพค่าต่างๆขึ้นไป
       
       lcd.setCursor(15, 1);
       lcd.print("7");
@@ -397,10 +397,12 @@ void loop() {
       }
 
 
-
+      bool ok = true;
+      
       switch (P_or_M) {
         case true:
           money_now += money_cal;
+          ok = true;
           break;
 
         case false:
@@ -408,42 +410,41 @@ void loop() {
           if (money_now - money_cal < 0) {
             lcd.clear();
             lcd.print("Not Enough!!!");
+            ok = false;
           } else {
             money_now -= money_cal;
+            ok = true;
           }
           break;
       }
 
-
-      
-      Nameid += id_now;
-      Firebase.setInt(Header + Nameid, money_now);
-
-      lcd.setCursor(0, 1);
-      lcd.print("               ");
-      lcd.setCursor(0, 1);
-
-
-      if (Firebase.failed()) {
-        lcd.print("Cann't Connect");
-        beep(500);
-        delay(100);
-
-        return;
-      } else {
-        History();            //เก็บ History
-        lcd.print("Done");
-        beep(100);
-        delay(100);
-        beep(100);
+      if(ok){
+        Nameid += id_now;
+        Firebase.setInt(Header + Nameid, money_now);
+  
+        lcd.setCursor(0, 1);
+        lcd.print("               ");
+        lcd.setCursor(0, 1);
+  
+  
+        if (Firebase.failed()) {
+          lcd.print("Cann't Connect");
+          beep(500);
+          delay(100);
+          return;
+        } else {
+          History();            //เก็บ History
+          lcd.print("Done");
+          beep(100);
+          delay(100);
+          beep(100);
+        }
       }
 
       delay(300);
       page = 1;
       break;
   }
-
-
 
 }
 
@@ -490,7 +491,6 @@ void History() {
   History_Log += String(id_now);
   History_Log += " Value=";
   
-
   if (P_or_M) {                                           // เช็คว่าลบหรือบวก
     int count_purchase = Firebase.getInt(Header + "History/Purchase");
     Firebase.setInt(Header + "History/Purchase" , count_purchase + money_cal);
