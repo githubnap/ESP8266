@@ -119,7 +119,7 @@ void loop() {
       mfrc522.PICC_HaltA();
       mfrc522.PCD_StopCrypto1();
       page = 1;
-
+      
       break;
 
     case 1:
@@ -182,7 +182,7 @@ void loop() {
         lcd.setCursor(1, 1);
         lcd.print(money_1);
         page_check = false;
-        delay(500);
+        delay(500); 
       }
 
       if (digitalRead(btU) != 1) {
@@ -446,13 +446,28 @@ void dump_byte_array(byte * buffer, byte bufferSize) {
 void History() {
 
   int count_number = Firebase.getInt("History/Count");   // เก็บจำหนวนครั้ง
-  Firebase.setInt("History/Count" , count_number + 1);
+  count_number++;
+  Firebase.setInt("History/Count" , count_number);
+
+  String History_Log ="";
+  History_Log += String(count_number);
+  History_Log += ".) ";
+  History_Log += "ID=";
+  History_Log += String(id_now);
+  History_Log += "  Value=";
+  
 
   if (P_or_M) {                                           // เช็คว่าลบหรือบวก
     int count_purchase = Firebase.getInt("History/Purchase");
     Firebase.setInt("History/Purchase" , count_purchase + money_cal);
+    
+    History_Log += "+";
   } else {
     int count_sell = Firebase.getInt("History/Sell");
     Firebase.setInt("History/Sell" , count_sell + money_cal);
+    
+    History_Log += "-";
   }
+    History_Log += String(money_cal);
+    Firebase.pushString("History/Log",History_Log);
 }
