@@ -1,3 +1,5 @@
+//กันหาย
+//กันหาย
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
@@ -119,9 +121,11 @@ void loop() {
       mfrc522.PICC_HaltA();
       mfrc522.PCD_StopCrypto1();
       page = 1;
+      
       break;
 
     case 1:
+      delay(100);
       money_1 = 1;
       money_2 = money_3 = -1;
       money_cal = money_value = 0;
@@ -146,8 +150,8 @@ void loop() {
         lcd.print("$");
       }
 
-      attachInterrupt(btR, changPage, FALLING);
-      attachInterrupt(btL, changPage, FALLING);
+      attachInterrupt(digitalPinToInterrupt(btR), changPage, FALLING);
+      attachInterrupt(digitalPinToInterrupt(btL), changPage, FALLING);
 
       page = 0 ;
       break;
@@ -384,7 +388,6 @@ void loop() {
           break;
       }
 
-      
       Nameid += id_now;
       Firebase.setInt(Nameid, money_now);
 
