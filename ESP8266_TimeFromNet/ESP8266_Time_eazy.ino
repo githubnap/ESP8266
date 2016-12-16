@@ -4,8 +4,8 @@
 #define WIFI_SSID       "ON_Home"
 #define WIFI_PASSWORD   "044349220"
 
-#define timezone = 7 * 3600;
-#define dst = 0;
+#define timezone  7*3600
+#define dst  0
 
 void setup() {
   Serial.begin(9600);
