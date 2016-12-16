@@ -12,10 +12,10 @@ MFRC522::MIFARE_Key key;
 #include <ESP8266WiFi.h>
 #include <FirebaseArduino.h>
 
-//#define WIFI_SSID       "KORATWATERLAND"
-//#define WIFI_PASSWORD   "0862445402"
-#define WIFI_SSID       "ON_Home"
-#define WIFI_PASSWORD   "044349220"
+#define WIFI_SSID       "KORATWATERLAND"
+#define WIFI_PASSWORD   "0862445402"
+//#define WIFI_SSID       "ON_Home"
+//#define WIFI_PASSWORD   "044349220"
 #define FIREBASE_HOST "test-178e4.firebaseio.com"
 #define FIREBASE_KEY "Cy4ZEdOd02GaVEYXO4ynBHQPCFiwZn7J7qWsTzvs"
 
@@ -384,6 +384,7 @@ void loop() {
           break;
       }
 
+      
       Nameid += id_now;
       Firebase.setInt(Nameid, money_now);
 
@@ -399,8 +400,6 @@ void loop() {
 
         return;
       } else {
-        Nameid += id_now;
-        Firebase.setInt(Nameid, money_now);
         lcd.print("Done");
         beep(100);
         delay(100);
@@ -440,8 +439,3 @@ void dump_byte_array(byte * buffer, byte bufferSize) {
   //Serial.print(keepID);
   keep_ID = "";
 }
-
-
-
-
-
