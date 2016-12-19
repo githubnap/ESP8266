@@ -30,10 +30,10 @@ MFRC522::MIFARE_Key key;
 
 #define beepPin 15
 
-int id_now = 0;
-bool P_or_M;
-int page = 0;
-bool page_check = true;
+int id_now = 0;             // ID ที่ได้มาจากการแสกน RFID
+bool P_or_M;                // ไว้ดูว่า เป็นค่าบวกหรือค่าลบ ของเงินที่จะเติมไป
+int page = 0;               // ลำดับ Step ของการบวนการต่างๆ
+bool page_check = true;     // ตัวแปรที่ไว้ใช้ครั้งเดียวในแต่ละหน้า
 
 int money_1 = 0;
 int money_2 = 0;
@@ -43,8 +43,8 @@ int money_now = 0;
 int money_value = 0;
 
 String Header = "";
-int Number_Tracking = 1;       //เครื่องที่เท่าไหร่ (เครื่องอยู่ตามที่ต่างๆ)
-
+uint8_t Number_Tracking = 1;       //เครื่องที่เท่าไหร่ (เครื่องอยู่ตามที่ต่างๆ)
+String Header_Nameid = "";
 
 void dump_byte_array(byte *buffer, byte bufferSize);
 void setup() {
@@ -96,8 +96,7 @@ void setup() {
     delay(500);
     j++;
   }
-  push_Header();
-  
+
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(WiFi.localIP());
@@ -120,17 +119,8 @@ void setup() {
 
 void loop() {
 
-  //  attachInterrupt(btR, menu(), FALLING);
-  //attachInterrupt(btL, menu(), FALLING);
+  Header_Nameid = "KWLcard/";
 
-  //Firebase.setInt(name, xxxxx);
-
-  //menu();
-  //  delay(500);
-  //  lcd.clear();
-  //  lcd.setCursor(0, 1);
-  //  lcd.print("end");
-  String Nameid = "KWLcard/";
   switch (page) {
     case 0:
       lcd.setCursor(15, 1);
@@ -139,12 +129,15 @@ void loop() {
         return;
       if ( ! mfrc522.PICC_ReadCardSerial())
         return;
+
       beep(100);
+      
+
       dump_byte_array(mfrc522.uid.uidByte, mfrc522.uid.size);
       mfrc522.PICC_HaltA();
       mfrc522.PCD_StopCrypto1();
       page = 1;
-      
+
       break;
 
     case 1:
@@ -152,8 +145,9 @@ void loop() {
       money_1 = 1;
       money_2 = money_3 = -1;
       money_cal = money_value = 0;
-      Nameid += id_now;
+      Header_Nameid += id_now;
       page_check = true;
+      push_Header();
 
       lcd.clear();
       lcd.setCursor(0, 0);
@@ -161,22 +155,22 @@ void loop() {
       lcd.print(String(id_now));
       lcd.setCursor(0, 1);
 
-      money_now = Firebase.getInt(Header + Nameid);
+      money_now = Firebase.getInt(Header + Header_Nameid);
 
       if (Firebase.failed()) {
         lcd.print("Cann't Connect");
         delay(100);
         return;
       } else {
-        //money_now = Firebase.getInt(Nameid);
+        //money_now = Firebase.getInt(Header_Nameid);
         lcd.print(money_now);
         lcd.print("$");
       }
-
       attachInterrupt(digitalPinToInterrupt(btR), changPage, FALLING);
       attachInterrupt(digitalPinToInterrupt(btL), changPage, FALLING);
-
       page = 0 ;
+
+
       break;
 
     case 2:
@@ -207,7 +201,7 @@ void loop() {
         lcd.setCursor(1, 1);
         lcd.print(money_1);
         page_check = false;
-        delay(500); 
+        delay(500);
       }
 
       if (digitalRead(btU) != 1) {
@@ -237,7 +231,6 @@ void loop() {
         delay(300);
         page = 1;
       }
-      //}
       break;
 
     case 4:
@@ -252,6 +245,7 @@ void loop() {
         delay(500);
       }
 
+
       if (digitalRead(btU) == 0) {  // ปุ่มขึ้น
         money_2 += 1;
         if (money_2 > 9) {
@@ -260,19 +254,17 @@ void loop() {
         lcd.setCursor(2, 1);
         lcd.print(money_2);
         delay(100);
+        
       } else if (digitalRead(btD) == 0) {  // ปุ่มลง
         if (money_2 <= 0) {
-          //          page = 6;
-          //          lcd.setCursor(2, 1);
-          //          lcd.print("$");
           money_2 = 0;
         } else {
           money_2 -= 1;
-          lcd.setCursor(2, 1);
-          lcd.print(money_2);
         }
-
+        lcd.setCursor(2, 1);
+        lcd.print(money_2);
         delay(100);
+        
       } else if (digitalRead(btR) == 1) {  // ปุ่มขวา
         page = 5;
         money_value = 2;
@@ -283,6 +275,7 @@ void loop() {
           money_value = 1;
           page_check = false;
         }
+        
       } else if (digitalRead(btL) == 0) {  // ปุ่มซ้าย
         lcd.print(" ");
         lcd.setCursor(5, 1);
@@ -305,28 +298,26 @@ void loop() {
         delay(500);
       }
 
-      delay(100);
+
       if (digitalRead(btU) != 1) {   // ปุ่มขึ้น
         money_3 += 1;
         lcd.setCursor(3, 1);
         lcd.print(money_3);
-        if (money_3 > 9) {
+        if (money_3 >= 9) {
           money_3 = 9;
         }
-
         delay(100);
+
       } else if (digitalRead(btD) == 0) {  // ปุ่มลง
         if (money_3 <= 0) {
-          //          page = 6;
-          //          lcd.setCursor(3, 1);
-          //          lcd.print("$");
           money_3 = 0;
         } else {
           money_3 -= 1;
-          lcd.setCursor(3, 1);
-          lcd.print(money_3);
         }
+        lcd.setCursor(3, 1);
+        lcd.print(money_3);
         delay(100);
+
       } else if (digitalRead(btR) == 1) {  // ปุ่มขวา
         page = 6;
         money_value = 3;
@@ -336,6 +327,7 @@ void loop() {
           money_value = 2;
           page_check = false;
         }
+
       } else if (digitalRead(btL) == 0) {  // ปุ่มซ้าย
         lcd.print(" ");
         lcd.setCursor(5, 1);
@@ -343,7 +335,6 @@ void loop() {
         delay(300);
         page = 1;
       }
-      //}
       break;
 
     case 6:                                   // หน้ายืนยัน
@@ -361,12 +352,12 @@ void loop() {
         lcd.setCursor(5, 1);
         lcd.print("Cancler");
         delay(500);
-        page = 1;
+        Exit();
       }
       break;
 
     case 7:                                   //หน้าคำนวน และ อัพค่าต่างๆขึ้นไป
-      
+
       lcd.setCursor(15, 1);
       lcd.print("7");
 
@@ -398,7 +389,7 @@ void loop() {
 
 
       bool ok = true;
-      
+
       switch (P_or_M) {
         case true:
           money_now += money_cal;
@@ -410,7 +401,9 @@ void loop() {
           if (money_now - money_cal < 0) {
             lcd.clear();
             lcd.print("Not Enough!!!");
+            delay(1000);
             ok = false;
+            Exit();
           } else {
             money_now -= money_cal;
             ok = true;
@@ -418,15 +411,15 @@ void loop() {
           break;
       }
 
-      if(ok){
-        Nameid += id_now;
-        Firebase.setInt(Header + Nameid, money_now);
-  
+      if (ok) {
+        Header_Nameid += id_now;
+        Firebase.setInt(Header + Header_Nameid, money_now);
+
         lcd.setCursor(0, 1);
         lcd.print("               ");
         lcd.setCursor(0, 1);
-  
-  
+
+
         if (Firebase.failed()) {
           lcd.print("Cann't Connect");
           beep(500);
@@ -435,14 +428,17 @@ void loop() {
         } else {
           History();            //เก็บ History
           lcd.print("Done");
-          beep(100);
+          beep(200);
           delay(100);
           beep(100);
         }
+
+
+
+        Exit();
       }
 
-      delay(300);
-      page = 1;
+      page = 0;
       break;
   }
 
@@ -480,7 +476,7 @@ void History() {
   count_number++;
   Firebase.setInt(Header + "History/Count" , count_number);
 
-  String History_Log ="";
+  String History_Log = "";
   History_Log += String(count_number);
   History_Log += ")";
   History_Log += "  ";
@@ -490,31 +486,57 @@ void History() {
   History_Log += " ID=";
   History_Log += String(id_now);
   History_Log += " Value=";
-  
+
   if (P_or_M) {                                           // เช็คว่าลบหรือบวก
     int count_purchase = Firebase.getInt(Header + "History/Purchase");
     Firebase.setInt(Header + "History/Purchase" , count_purchase + money_cal);
-    
+
     History_Log += "+";
   } else {
     int count_sell = Firebase.getInt(Header + "History/Sell");
     Firebase.setInt(Header + "History/Sell" , count_sell + money_cal);
-    
+
     History_Log += "-";
   }
-    History_Log += String(money_cal);
-    Firebase.pushString(Header + "History/Log",History_Log);
+  History_Log += String(money_cal);
+  Firebase.pushString(Header + "History/Log", History_Log);
 }
 
-void push_Header(){
-      time_t now = time(nullptr);                              // ดึงเวลามาจากเน็ต
-      struct tm* p_tm = localtime(&now);
-      Header = String((p_tm -> tm_year) - 100 + 2000);        //คำนวนปี
-      Header += "/";
-      Header += String(p_tm -> tm_mon + 1);                   //คำนวนเดือน
-      Header += "/";
-      Header += String(p_tm -> tm_mday);                   //คำนวนวัน
-      Header += "/";
-      Header += Number_Tracking;
-      Header += "/";
+void push_Header() {
+  time_t now = time(nullptr);                              // ดึงเวลามาจากเน็ต
+  struct tm* p_tm = localtime(&now);
+  Header = String((p_tm -> tm_year) - 100 + 2000);        //คำนวนปี
+  Header += "/";
+  Header += String(p_tm -> tm_mon + 1);                   //คำนวนเดือน
+  Header += "/";
+  Header += String(p_tm -> tm_mday);                   //คำนวนวัน
+  Header += "/";
+  Header += Number_Tracking;
+  Header += "/";
+}
+
+void Exit() {
+  //โชว์ยอดเงินคงเหลือ
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("ID:");
+  lcd.print(String(id_now));
+  lcd.setCursor(0, 1);
+
+  money_now = Firebase.getInt(Header + Header_Nameid);
+
+  if (Firebase.failed()) {
+    lcd.print("Cann't Connect");
+    delay(100);
+    return;
+  } else {
+    lcd.print(money_now);
+    lcd.print("$");
+  }
+
+  delay(3000);
+  page = 0;
+
+  lcd.clear();
+  lcd.print("Find New ID");
 }
