@@ -663,6 +663,9 @@ void loop() {
           break;
       }
 
+      if(money_cal == 999){
+        money_cal = 1000;
+      }
 
       bool ok = true;
 
