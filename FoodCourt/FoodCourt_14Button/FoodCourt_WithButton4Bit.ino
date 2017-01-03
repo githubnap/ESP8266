@@ -36,11 +36,6 @@ MFRC522::MIFARE_Key key;
 #define b3 15 //D8
 #define b4 2 //D4
 
-#define btL 1 //tx
-#define btR 15 //rx
-#define btU 3 //D8
-#define btD 2 //D4
-
 unsigned long timer_this;
 
 #define beepPin 15
@@ -75,10 +70,10 @@ void setup() {
 
   Serial.begin(9600);
 
-  pinMode(btL, INPUT_PULLUP);
-  pinMode(btR, INPUT_PULLUP);
-  pinMode(btU, INPUT_PULLUP);
-  pinMode(btD, INPUT_PULLUP);
+  pinMode(b1, INPUT);
+  pinMode(b2, INPUT);
+  pinMode(b3, INPUT);
+  pinMode(b4, INPUT);
 
 
 
@@ -600,6 +595,7 @@ void loop() {
         delay(300);
         Exit();
       } else if ( Input == "1101") { // Yes
+        beep(100);
         page = 6;
         delay(200);
       }
