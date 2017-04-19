@@ -32,9 +32,9 @@ MFRC522::MIFARE_Key key;
 #define FIREBASE_KEY "Cy4ZEdOd02GaVEYXO4ynBHQPCFiwZn7J7qWsTzvs"
 
 #define b1 1 //tx
-#define b2 3 //rx
-#define b3 15 //D8
-#define b4 2 //D4
+#define b2 2 //rx
+#define b3 3 //D8
+#define b4 15 //D4
 
 unsigned long timer_this;
 
@@ -133,6 +133,7 @@ void setup() {
   lcd.setCursor(0, 1);
   lcd.print("Start");
   delay(1000);
+  lcd.clear();
 }
 
 
@@ -143,10 +144,17 @@ void loop() {
   switch (page) {
     case 0:
       delay(100);
-      lcd.clear();
+      lcd.setCursor(0, 0);
       lcd.print("Find New ID...");
       lcd.setCursor(15, 1);
       lcd.print("0");
+
+      lcd.setCursor(12, 0);
+      lcd.print(digitalRead(b1));
+      lcd.print(digitalRead(b2));
+      lcd.print(digitalRead(b3));
+      lcd.print(digitalRead(b4));
+      lcd.setCursor(0, 0);
 
       if ( ! mfrc522.PICC_IsNewCardPresent())
         return;
@@ -160,6 +168,7 @@ void loop() {
       mfrc522.PICC_HaltA();
       mfrc522.PCD_StopCrypto1();
       page = 1;
+      lcd.clear();
 
       break;
 
@@ -172,8 +181,16 @@ void loop() {
       page_check = true;
       push_Header();
       money_now = 0;
+
       
-      lcd.clear();
+      
+            lcd.setCursor(12, 0);
+      lcd.print(digitalRead(b1));
+      lcd.print(digitalRead(b2));
+      lcd.print(digitalRead(b3));
+      lcd.print(digitalRead(b4));
+      lcd.setCursor(0, 0);
+      
       lcd.setCursor(0, 0);
       lcd.print("ID:");
       lcd.print(String(id_now));
@@ -212,7 +229,7 @@ void loop() {
         lcd.print("-");
         page = 3 ;
         beep(100);
-        
+
       } else if (ReadInput() == "1010") {
         lcd.setCursor(0, 1);
         lcd.print("              ");
@@ -249,7 +266,7 @@ void loop() {
         page_check = true;
         beep(100);
         delay(100);
-        
+
 
       } else if ( Input == "0010") { // 2
         money_1 = 2;
@@ -659,7 +676,7 @@ void loop() {
           break;
       }
 
-      if(money_cal == 999){
+      if (money_cal == 999) {
         money_cal = 1000;
       }
 
@@ -780,12 +797,16 @@ void History() {
 void push_Header() {
   time_t now = time(nullptr);                              // ดึงเวลามาจากเน็ต
   struct tm* p_tm = localtime(&now);
-  Header = String((p_tm -> tm_year) - 100 + 2000);        //คำนวนปี
+  Header = "Year:";
+  Header += String((p_tm -> tm_year) - 100 + 2000);        //คำนวนปี
   Header += "/";
+  Header += "Month:";
   Header += String(p_tm -> tm_mon + 1);                   //คำนวนเดือน
   Header += "/";
+  Header += "Day:";
   Header += String(p_tm -> tm_mday);                   //คำนวนวัน
   Header += "/";
+  Header += "Number:";
   Header += Number_Tracking;
   Header += "/";
 }
@@ -798,7 +819,7 @@ void Exit() {
   lcd.print(String(id_now));
   lcd.setCursor(0, 1);
 
- // money_now = Firebase.getInt(Header + Header_Nameid);
+  // money_now = Firebase.getInt(Header + Header_Nameid);
 
   if (Firebase.failed()) {
     lcd.print("Cann't Connect");
