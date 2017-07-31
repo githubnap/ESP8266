@@ -13,11 +13,34 @@ const char* ssid = "ON_Home";
 const char* password = "044349220";
 // ^^^^ setup Wifi ^^^^
 
+/*
+ * 
+ SETUP  
+    V
+ ดึงเวลา
+    V
+ โชว์เวลา
+    V
+ เช๊คปุ่ม > !มีการกดปุ่ม1 > เช๊คนิ้ว >  โชว์ตัวเลขคนท้ายสุด+1 > เลือกตำแหน่ง +,- > รอกดปุ่ม > เพิ่มนิ้ว 
+    V  // !มีการกดปุ่ม2 > เช๊คนิ้ว >  โชว์ตัวเลขคนท้ายสุด > เลือกตำแหน่ง +,- > รอกดปุ่ม > ลบนิ้ว
+    V               
+ เช๊คนิ้ว > ไม่มีนิ้วมาสแกน > Loop             
+    V
+ บันทึกเวลาในแมม
+    V
+ อัพขึ้น google sheet
+   V
+ โชว์เลข ID
+  V 
+ Loop
+ 
+ */
+
 void setupSerial();
 void setupLED();
 void setupTime();
 void setupWifi();
-void setupSD_card();
+//void setupSD_card();
 void setupFingerprint();
 void setupButton();
 void setupJson();
@@ -35,9 +58,9 @@ void showTimeLED(); //สั่งให้แสดงเวลา
 void showLED(int address, int number); //ให้เลือกตำแหน่ง ที่ให้แสดงตัวเลข และแสดงเลขอะไร
 void clearLED(); // เคลียร์หน้าจอ LED
 
-void SD_write_to(String Flie_name , String Text_to_write); //เขียนไฟล์
-void SD_read(String Flie_name); //อ่านไฟล์
-void SD_remove(String Flie_name); //ลบไฟล์
+//void SD_write_to(String Flie_name , String Text_to_write); //เขียนไฟล์
+//void SD_read(String Flie_name); //อ่านไฟล์
+//void SD_remove(String Flie_name); //ลบไฟล์
 
 int check_puse_button(); //ตรวจสอบการกดปุ่ม
 void Puse_2_button(); //ถ้ากดสองปุ่มพร้อมกัน
@@ -76,7 +99,7 @@ void setup() {
   setupLED();
   setupWifi();
   setupTime();
-  setupSD_card();
+  //setupSD_card();
   setupFingerprint();
   setupButton();
   setupJson();
@@ -88,48 +111,32 @@ void loop() {
   showTimeLED();
 
 
-  if (check_puse_button() == 3) {
-    Page = 2;
-  }
-  while (Page == 2) {
-    int Add_member_number = All_member_num;
+  if (check_puse_button() == 1) {
     clearLED();
-    showLED(7, Add_member_number / 10);
-    showLED(6, Add_member_number % 10);
+    showLED(0,1);
+    Beepshort();
+    delay(100);
+  }
 
-    switch (check_puse_button()) {
-      case 1:
-        Add_member_number--;
-        showLED(7, Add_member_number / 10);
-        showLED(6, Add_member_number % 10);
-
-        showLED(0, 9);
-        showLED(1, 6);
-        //        showLED(3, load_name_by_position(Add_member_number).substring(0, 1) );
-        //        showLED(2, load_name_by_position(Add_member_number).substring(1, 2) );
-        //        showLED(1, load_name_by_position(Add_member_number).substring(2, 3) );
-        //        showLED(0, load_name_by_position(Add_member_number).substring(3, 4) );
-        break;
-      case 2:
-        break;
-      case 3:
-        break;
-      default:
-        break;
-    }
-
+  int id_fing;
+  id_fing = get_ID_Card();
+  if(id_fing > 0){
+    clearLED();
+    showLED(0,id_fing);
+    Beepshort();
+    delay(100);
   }
 
   //SD_write_to("test","New one");
   //SD_read("test");
 
 
-  //    Add_finger(0);
-
-  //  if (get_ID_Card() != -1) {
-  //    Beepshort();
-  //    showLED(2, ID_Card);
-  //  }
+//    Add_finger(0);
+//
+//  if (get_ID_Card() != -1) {
+//    Beepshort();
+//    showLED(2, ID_Card);
+//  }
 
 
 

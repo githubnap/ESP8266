@@ -4,7 +4,7 @@
    ** MISO - pin D6
    ** CLK - pin D5
    ** CS - pin D8=15
- */
+ /
 File myFile;
 
 int CS_pin = 15; 
