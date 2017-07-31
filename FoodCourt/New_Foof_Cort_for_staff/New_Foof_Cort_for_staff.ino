@@ -159,8 +159,8 @@ void loop() {
       if (ch_start_print) {
         lcd.clear();
         lcd.print("Find New ID...");
-//        lcd.setCursor(15, 1);
-//        lcd.print("0");
+        //        lcd.setCursor(15, 1);
+        //        lcd.print("0");
         ch_start_print = false;
       }
 
@@ -179,7 +179,7 @@ void loop() {
         lcd.setCursor(0, 1);
       }
 
-        if (ReadInput() == "0010") {  // กดปุ่ม 2 เพื่อดูยอดขายเดือน
+      if (ReadInput() == "0010") {  // กดปุ่ม 2 เพื่อดูยอดขายเดือน
         push_Header();
         time_t now = time(nullptr);
         struct tm* p_tm = localtime(&now);
@@ -196,11 +196,11 @@ void loop() {
 
 
 
-//      lcd.setCursor(12, 0);
-//      lcd.print(digitalRead(b1));
-//      lcd.print(digitalRead(b2));
-//      lcd.print(digitalRead(b3));
-//      lcd.print(digitalRead(b4));
+      //      lcd.setCursor(12, 0);
+      //      lcd.print(digitalRead(b1));
+      //      lcd.print(digitalRead(b2));
+      //      lcd.print(digitalRead(b3));
+      //      lcd.print(digitalRead(b4));
       //lcd.setCursor(0, 0);
 
       if ( ! mfrc522.PICC_IsNewCardPresent())
@@ -231,18 +231,18 @@ void loop() {
 
 
       lcd.clear();
-//      lcd.setCursor(12, 0);
-//      lcd.print(digitalRead(b1));
-//      lcd.print(digitalRead(b2));
-//      lcd.print(digitalRead(b3));
-//      lcd.print(digitalRead(b4));
+      //      lcd.setCursor(12, 0);
+      //      lcd.print(digitalRead(b1));
+      //      lcd.print(digitalRead(b2));
+      //      lcd.print(digitalRead(b3));
+      //      lcd.print(digitalRead(b4));
       lcd.setCursor(0, 0);
 
       lcd.setCursor(0, 1);
       lcd.print("ID:");
       lcd.print(String(id_now));
       lcd.setCursor(0, 0);
-      Firebase.setInt("DataBase/Staff_Name/New_ID",id_now);       //แสกนบัตรใหม่แล้วเพิ่มเข้าไป
+      Firebase.setInt("DataBase/Staff_Name/New_ID", id_now);      //แสกนบัตรใหม่แล้วเพิ่มเข้าไป
       lcd.print("ID:");
       id_now_name = Firebase.getString("DataBase/Staff_Name/" + String(id_now));
       lcd.print(id_now_name);
@@ -273,7 +273,7 @@ void loop() {
 
       if ( TimeCheck() >= 3) {
         //page = 0;
-        
+
         Exit();
       }
 
@@ -289,14 +289,14 @@ void loop() {
 
       } else if (ReadInput() == "1010") {  // +
         bool ch_plus = Firebase.getBool("DataBase/Plus");
-        
-        if(ch_plus == true){
+
+        if (ch_plus == true) {
           lcd.setCursor(0, 1);
           lcd.print("              ");
           lcd.setCursor(0, 1);
           lcd.print("Allow ^_^");
           delay(1000);
-          
+
           lcd.setCursor(0, 1);
           lcd.print("              ");
           lcd.setCursor(0, 1);
@@ -305,8 +305,8 @@ void loop() {
           lcd.print("+");
           page = 3 ;
           beep(100);
-          Firebase.setBool("DataBase/Plus",false);
-        }else{
+          Firebase.setBool("DataBase/Plus", false);
+        } else {
           lcd.clear();
           lcd.print("Lock !!");
           beep(100);
@@ -320,8 +320,8 @@ void loop() {
 
     case 3:
       delay(100);                   //ตัวเลขหลักที่ 1
-//      lcd.setCursor(15, 1);
-//      lcd.print("3");
+      //      lcd.setCursor(15, 1);
+      //      lcd.print("3");
 
       if (page_check) {
         //lcd.setCursor(1, 1);
@@ -436,8 +436,8 @@ void loop() {
 
     case 4:
       delay(50);                   //ตัวเลขหลักที่ 2
-//      lcd.setCursor(15, 1);
-//      lcd.print("4");
+      //      lcd.setCursor(15, 1);
+      //      lcd.print("4");
 
       if (page_check) {
         lcd.setCursor(2, 1);
@@ -567,8 +567,8 @@ void loop() {
 
     case 5:
       delay(50);                   //ตัวเลขหลักที่ 3
-//      lcd.setCursor(15, 1);
-//      lcd.print("5");
+      //      lcd.setCursor(15, 1);
+      //      lcd.print("5");
 
       if (page_check) {
         lcd.setCursor(3, 1);
@@ -696,8 +696,8 @@ void loop() {
 
     case 6:                                   // หน้ายืนยัน
 
-//      lcd.setCursor(15, 1);
-//      lcd.print("6");
+      //      lcd.setCursor(15, 1);
+      //      lcd.print("6");
 
       lcd.setCursor(6, 1);
       lcd.print("Y/N");
@@ -723,8 +723,8 @@ void loop() {
 
     case 7:                                   //หน้าคำนวน และ อัพค่าต่างๆขึ้นไป
 
-//      lcd.setCursor(15, 1);
-//      lcd.print("7");
+      //      lcd.setCursor(15, 1);
+      //      lcd.print("7");
 
       lcd.setCursor(0, 1);
       lcd.print("               ");
@@ -832,10 +832,14 @@ void dump_byte_array(byte * buffer, byte bufferSize) {
   for (byte i = 0; i < bufferSize; i++) {
     //Serial.print(buffer[i] < 0x10 ? " 0" : " ");
     //Serial.print(buffer[i]);
+    if (buffer[i] < 0x10) {
+      keep_ID += "0";
+    }
     keep_ID += buffer[i];
+
   }
   id_now = keep_ID.toInt();
-  //Serial.print(keepID);
+  //Serial.print(keep_ID);
   keep_ID = "";
 }
 
